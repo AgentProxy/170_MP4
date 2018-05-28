@@ -275,7 +275,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         ret_pair = [current_action, current_value]  #pair to be returned
         for action in legalActions:                 #loops through all legal actions available to current agent
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth, alpha, beta)
-            if type(val) is list:                   #Return the value. If it is a list where it returns a direction and value.
+            if type(val) is list:                   #Return the value. If it is a list where it returns a direction and value, return the value only hence [1].
                 check_val = val[1]              
             else:
                 check_val = val
@@ -302,7 +302,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         ret_pair = [current_action, current_value]  #pair to be returned
         for action in legalActions:                 #loops through all legal actions available to current agent
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth, alpha, beta)
-            if type(val) is list:                   #Return the value. If it is a list where it returns a direction and value.
+            if type(val) is list:                   #Return the value. If it is a list where it returns a direction and value, return the value only hence [1].
                 check_val = val[1]
             else:
                 check_val = val
@@ -341,18 +341,60 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+      if currentAgentIndex >= gameState.getNumAgents():# when current Agent index is more than num of agents is becomes pacman's index and the depth increases
+          currentAgentIndex = 0
+          currentDepth += 1
+
+      if  currentDepth == self.depth or gameState.isWin() or gameState.isLose(): #when we are starting to hit terminal states like reaching max depth.
+          return self.evaluationFunction(gameState)
+
+      elif currentAgentIndex == 0:          #get max value when index of agent is pacman
+          return self.max_value(gameState, currentAgentIndex, currentDepth)
+
+      else:                                 #get min value when index of agent is ghosts
+          return self.exp_value(gameState, currentAgentIndex, currentDepth)
+
       # More or less the same with MinimaxAgent's value() method
       # Only difference: use exp_value instead of min_value
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        legalActions = gameState.getLegalActions(currentAgentIndex)
+        current_value = float('-inf')
+        current_action = "None"
+        ret_pair = [current_action, current_value] #pair to be returned
+
+        for action in legalActions:     #loops through all legal actions available to current agent
+            val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth)   #gets the value of the succesor of the other agent
+
+            if type(val) is list:       #Return the value. If it is a list where it returns a direction and value, return the value only hence [1].
+                check_val = val[1]
+            else:
+                check_val = val
+            if check_val > current_value:    #if the checking value is larger then that will be the updated current value and the value of the action's score
+                ret_pair = [action, check_val]
+                current_value = check_val
+        return ret_pair     #returns the list pair
       # Exactly like MinimaxAgent's max_value() method
 
     # Note: always returns (action,score) pair
     def exp_value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        legalActions = gameState.getLegalActions(currentAgentIndex)
+        current_value = 0
+        current_action = "None"
+        prob = 1.0              #Assigned a default value
+        if len(legalActions)!=0:                   #To prevent division by 0
+                prob = 1.0/float(len(legalActions))     #Get the probability by dividing the probability of an action over the number of actions
+    
+        for action in legalActions:      #loops through all legal actions available to current agent
+            val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth) #gets the value of the succesor of the other agent
+            if type(val) is list:       #Return the value. If it is a list where it returns a direction and value, return the value only hence [1].
+                check_val = val[1]
+            else:
+                check_val = val
+            current_value += prob * check_val   #The expected valus is the average, weighted by the probability distribution over outcomes
+        return [current_action,current_value]    #returns the list pair
+
       # use gameState.getLegalActions(...) to get list of actions
       # assume uniform probability of possible actions
       # compute probabilities of each action
@@ -364,8 +406,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       # Return (None,total_expected_value) 
       # None action --> we only need to compute exp_value but since the 
       # signature return values of these functions are (action,score), we will return an empty action
-
-
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
