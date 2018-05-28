@@ -272,21 +272,21 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         legalActions = gameState.getLegalActions(currentAgentIndex)
         current_value = float('inf') * -1
         current_action = "None"
-        ret_pair = [current_action, current_value]
-        for action in legalActions:
+        ret_pair = [current_action, current_value]  #pair to be returned
+        for action in legalActions:                 #loops through all legal actions available to current agent
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth, alpha, beta)
-            if type(val) is list: 
-                check_val = val[1]
+            if type(val) is list:                   #Return the value. If it is a list where it returns a direction and value.
+                check_val = val[1]              
             else:
                 check_val = val
 
-            if check_val > current_value: #if the checking value is larger then that will be the updated current value and the value of the action's score
+            if check_val > current_value:           #if the checking value is larger then that will be the updated current value and the value of the action's score
                 ret_pair = [action, check_val]
                 current_value = check_val
 
-            if check_val > beta:
+            if check_val > beta:                    #if check_val is greater than beta return action and value. This is where pruning happens because it disregards other branches
                 return [action, check_val]
-            alpha = max(alpha, check_val)
+            alpha = max(alpha, check_val)           #if not, update the alpha to the maximum of the current beta and the new value
         return ret_pair
 
     # Similar to MinimaxAgent's max_value() method
@@ -299,21 +299,21 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         legalActions = gameState.getLegalActions(currentAgentIndex)
         current_value = float('inf')
         current_action = "None"
-        ret_pair = [current_action, current_value]
-        for action in legalActions:
+        ret_pair = [current_action, current_value]  #pair to be returned
+        for action in legalActions:                 #loops through all legal actions available to current agent
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth, alpha, beta)
-            if type(val) is list: 
+            if type(val) is list:                   #Return the value. If it is a list where it returns a direction and value.
                 check_val = val[1]
             else:
                 check_val = val
 
-            if check_val < current_value: #if the checking value is larger then that will be the updated current value and the value of the action's score
+            if check_val < current_value:           #if the checking value is smaller then that will be the updated current value and the value of the action's score
                 ret_pair = [action, check_val]
                 current_value = check_val
 
-            if check_val < alpha:
+            if check_val < alpha:                   #if check_val is less than alpha return action and value. This is where pruning happens because it disregards other branches
                 return [action, check_val]
-            beta = min(beta, check_val)
+            beta = min(beta, check_val)             #if not, update the beta to the minimum of the current beta and the new value
         return ret_pair
 
       # Similar to MinimaxAgent's min_value() method
