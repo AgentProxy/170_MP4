@@ -259,7 +259,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         if currentAgentIndex >= gameState.getNumAgents():# when current Agent index is more than num of agents is becomes pacman's index and the depth increases
             currentAgentIndex = 0
             currentDepth += 1
-
         if  currentDepth == self.depth or gameState.isWin() or gameState.isLose(): #when we are starting to hit terminal states like reaching max depth.
             return self.evaluationFunction(gameState)
 
@@ -268,45 +267,55 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         else:                                 #get min value when index of agent is ghosts
             return self.min_value(gameState, currentAgentIndex, currentDepth, alpha, beta)
-        # check whether currentAgentIndex is our pacman agent or ghost agent
-        # if our agent: return max_value(....)
-        # otherwise: return min_value(....)
-        pass
-        # More or less the same with MinimaxAgent's value() method
-        # Just update the calls to max_value and min_value (should now include alpha, beta params)
 
-        # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-    #   v = float(-inf)
+        legalActions = gameState.getLegalActions(currentAgentIndex)
+        current_value = float('inf') * -1
+        current_action = "None"
+        ret_pair = [current_action, current_value]
+        for action in legalActions:
+            val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth, alpha, beta)
+            if type(val) is list: 
+                check_val = val[1]
+            else:
+                check_val = val
 
-    #     for successor in gameState.generatePacmanSuccessor():
-    #         v = max(v, value(successor, alpha, beta))
-    #         if v < beta:
-    #             return v
-    #         alpha = max(alpha, v)
+            if check_val > current_value: #if the checking value is larger then that will be the updated current value and the value of the action's score
+                ret_pair = [action, check_val]
+                current_value = check_val
 
-    #     return v
+            if check_val > beta:
+                return [action, check_val]
+            alpha = max(alpha, check_val)
+        return ret_pair
 
-      
-      pass
-      # Similar to MinimaxAgent's max_value() method
-      # Include checking if current_value is worse than beta
-      #   if so, immediately return current (action,current_value) tuple
-      # Include updating of alpha
-
+    # Similar to MinimaxAgent's max_value() method
+    # Include checking if current_value is worse than beta
+    #   if so, immediately return current (action,current_value) tuple
+    # Include updating of alpha
     # Note: always returns (action,score) pair
-    def min_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-     
-        # v = float(inf)
 
-        # for successor in gameState.generatePacmanSuccessor():
-        #     v = max(v, value(successor, alpha, beta))
-        #     if v < alpha:
-        #         return v
-        #     beta = max(alpha, v)
-        # return v
-     
-      pass
+    def min_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
+        legalActions = gameState.getLegalActions(currentAgentIndex)
+        current_value = float('inf')
+        current_action = "None"
+        ret_pair = [current_action, current_value]
+        for action in legalActions:
+            val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth, alpha, beta)
+            if type(val) is list: 
+                check_val = val[1]
+            else:
+                check_val = val
+
+            if check_val < current_value: #if the checking value is larger then that will be the updated current value and the value of the action's score
+                ret_pair = [action, check_val]
+                current_value = check_val
+
+            if check_val < alpha:
+                return [action, check_val]
+            beta = min(beta, check_val)
+        return ret_pair
+
       # Similar to MinimaxAgent's min_value() method
       # Include checking if current_value is worse than alpha
       #   if so, immediately return current (action,current_value) tuple
