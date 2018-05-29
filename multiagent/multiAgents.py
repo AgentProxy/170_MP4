@@ -86,8 +86,7 @@ class ReflexAgent(Agent):
 
         distanceGhost = [manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates]
         try:
-            if min(
-                    distanceGhost) > 0:  # We're only concerned with the nearest ghost as it is the immediate danger to pacman.
+            if min(distanceGhost) > 0:  # We're only concerned with the nearest ghost as it is the immediate danger to pacman.
                 val -= ghost_weight / min(distanceGhost)
         except ValueError:
             print("VALUE ERROR")
@@ -95,7 +94,6 @@ class ReflexAgent(Agent):
         distanceFood = [manhattanDistance(newPos, food) for food in newFood.asList()]
         try:
             if min(distanceFood) > 0:  # As long as food remains, pacman must seek them while avoiding the ghosts.
-                # if len(distanceFood):
                 val += food_weight / min(distanceFood)
         except ValueError:
             print("VALUE ERROR")
@@ -188,6 +186,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         ret_pair = [current_action, current_value] #pair to be returned
 
         for action in legalActions:#loops through all legal actions available to current agent
+
+            if action == "Stop":
+                continue
+
+
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth) #gets the value of the succesor of the other agent
 
             if type(val) is list: # since i have to return pairs and this is in recursion it is needed to help get the value of the action
@@ -216,6 +219,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         ret_pair = [current_action, current_value]#pair to be returned
 
         for action in legalActions: #loops through all legal actions available to current agent
+
+            if action == "Stop":
+                continue
+
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth) #gets the value of the succesor of the other agent
 
             if type(val) is list: # since i have to return pairs and this is in recursion it is needed to help get the value of the action
@@ -412,9 +419,10 @@ def betterEvaluationFunction(currentGameState):
       evaluation function (question 5).
 
       DESCRIPTION: <write something here so we know what you did>
+	  # Food is more important if Ghosts are scared, otherwise it is more important to avoid Ghosts first.
     """
     "*** YOUR CODE HERE ***"
-    score = currentGameState.getScore()
+    val = currentGameState.getScore()
     # Similar to Q1, only this time there's only one state (no nextGameState to compare it to)
     # Use similar features here: position, food, ghosts, scared ghosts, distances, etc.
     # Can use manhattanDistance() function
@@ -422,7 +430,30 @@ def betterEvaluationFunction(currentGameState):
     # Update the score variable (add / subtract), depending on the features and their weights
     # Note: Edit the Description in the string above to describe what you did here
 
-    return score
+    currentPos = currentGameState.getPacmanPosition()
+    currentFood = currentGameState.getFood()
+    currentGhostStates = currentGameState.getGhostStates()
+    currentScaredTimes = [ghostState.scaredTimer for ghostState in currentGhostStates]
+	
+    scared = min(currentScaredTimes) < 1
+    ghost_weight = (10 * scared) + 4
+    food_weight = 5
+
+    distanceGhost = [manhattanDistance(currentPos, ghost.getPosition()) for ghost in currentGhostStates]
+    try:
+		if min(distanceGhost) > 0:  # We're only concerned with the nearest ghost as it is the immediate danger to pacman.
+			val -= ghost_weight / min(distanceGhost)
+    except ValueError:
+		print("VALUE ERROR: GHOST EMPTY")
+
+    distanceFood = [manhattanDistance(currentPos, food) for food in currentFood.asList()]
+    try:
+		if min(distanceFood) > 0:  # As long as food remains, pacman must seek them while avoiding the ghosts.
+			val += food_weight / min(distanceFood)
+    except ValueError:
+		print("VALUE ERROR: FOOD EMPTY")
+	
+    return val
 
 # Abbreviation
 better = betterEvaluationFunction
