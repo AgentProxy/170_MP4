@@ -187,10 +187,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         for action in legalActions:#loops through all legal actions available to current agent
 
-            if action == "Stop":
-                continue
-
-
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth) #gets the value of the succesor of the other agent
 
             if type(val) is list: # since i have to return pairs and this is in recursion it is needed to help get the value of the action
@@ -219,9 +215,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         ret_pair = [current_action, current_value]#pair to be returned
 
         for action in legalActions: #loops through all legal actions available to current agent
-
-            if action == "Stop":
-                continue
 
             val = self.value(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, currentDepth) #gets the value of the succesor of the other agent
 
@@ -266,6 +259,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         if currentAgentIndex >= gameState.getNumAgents():# when current Agent index is more than num of agents is becomes pacman's index and the depth increases
             currentAgentIndex = 0
             currentDepth += 1
+
         if  currentDepth == self.depth or gameState.isWin() or gameState.isLose(): #when we are starting to hit terminal states like reaching max depth.
             return self.evaluationFunction(gameState)
 
